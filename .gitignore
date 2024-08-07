@@ -1,0 +1,5 @@
+.venv/
+workers/
+http.log
+twistd.log
+state.sqlite
