@@ -1,0 +1,9 @@
+services:
+  nginx:
+    image: nginx:1.27.0-bookworm
+    volumes:
+      - type: bind
+        read_only: true
+        source: ./nginx
+        target: /etc/nginx
+    network_mode: "host"
