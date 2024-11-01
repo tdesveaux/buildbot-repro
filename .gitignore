@@ -1,5 +1,6 @@
 .venv/
 workers/
 http.log
-twistd.log
 state.sqlite
+twistd.pid
+twistd.log
