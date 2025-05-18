@@ -4,6 +4,7 @@ from buildbot.config import BuilderConfig
 from buildbot.steps.shell import ShellCommand
 from buildbot.process.factory import BuildFactory
 from buildbot.www.auth import UserPasswordAuth
+from buildbot.process.properties import Interpolate
 
 c = BuildmasterConfig = {}
 
@@ -56,6 +57,6 @@ c["www"] = {'port': 8010, 'auth': UserPasswordAuth(users={'user': 'pwd'})}
 ####### DB URL
 
 c["db"] = {
-    "db_url": "sqlite:///state.sqlite",
+    "db_url": Interpolate("sqlite:///%(kw:filename)s", filename="state.sqlite"),
 }
-c["buildbotNetUsageData"] = None
+c["buildbotNetUsageData"] = "full"
