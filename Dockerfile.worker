@@ -1,0 +1,18 @@
+FROM debian:stretch-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+
+COPY ./sources.list /etc/apt/sources.list
+RUN apt update && \
+    apt install --no-install-recommends --yes --quiet buildbot-slave dumb-init && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /buildbot && chown -R buildbot:buildbot /buildbot
+
+USER buildbot
+WORKDIR /buildbot
+
+COPY ./worker.tac /buildbot/worker.tac
+
+CMD ["/usr/bin/dumb-init", "/usr/bin/twistd", "--pidfile=", "--nodaemon", "--python=worker.tac"]

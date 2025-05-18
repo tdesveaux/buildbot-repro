@@ -4,12 +4,22 @@ from typing import Any
 from buildbot.config import BuilderConfig
 from buildbot.process.factory import BuildFactory
 from buildbot.schedulers import forcesched, triggerable
+from buildbot.schedulers.forcesched import (
+    AnyPropertyParameter,
+    BooleanParameter,
+    ChoiceStringParameter,
+    FileParameter,
+    FixedParameter,
+    IntParameter,
+    NestedParameter,
+    StringParameter,
+    TextParameter,
+    UserNameParameter,
+    WorkerChoiceParameter,
+)
 from buildbot.steps.shell import ShellCommand
-from buildbot.steps.trigger import Trigger
-from buildbot.steps.master import MasterShellCommand
-from buildbot.worker import local
+from buildbot.worker import Worker
 from buildbot.www.auth import UserPasswordAuth
-from buildbot.schedulers.forcesched import FixedParameter, StringParameter, TextParameter, IntParameter, BooleanParameter, UserNameParameter, ChoiceStringParameter, WorkerChoiceParameter, FileParameter, NestedParameter, AnyPropertyParameter
 
 c: dict[str, Any] = {}
 BuildmasterConfig = c
@@ -19,28 +29,12 @@ BuildmasterConfig = c
 c["protocols"] = {"pb": {"port": 9989}}
 
 c["workers"] = [
-    local.LocalWorker("worker"),
+    Worker("old-worker", password="s3cret"),
 ]
 
 ####### BUILDERS
 c["builders"] = [
-    BuilderConfig(
-        name="triggered",
-        workernames=["worker"],
-        factory=BuildFactory(
-            [
-                MasterShellCommand(
-                    command=["python3", "-c", "import sys; sys.exit(1)"]
-                ),
-                ShellCommand(command=["python3", "-c", "import sys; sys.exit(1)"]),
-            ]
-        ),
-    ),
-    BuilderConfig(
-        name="builder-with-a-really-long-name-and-some-more",
-        workernames=["worker"],
-        factory=BuildFactory(([Trigger(["triggerable"], waitForFinish=True)])),
-    ),
+    BuilderConfig(name="builder", workernames=["old-worker"], factory=BuildFactory(ShellCommand(command=["echo", "ok"]))),
 ]
 
 ####### SCHEDULERS

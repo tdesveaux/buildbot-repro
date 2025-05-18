@@ -1,20 +1,17 @@
 import os
+import sys
 
 from twisted.application import service
+from twisted.python.log import ILogObserver, FileLogObserver
 from buildbot.master import BuildMaster
 
-basedir = '.'
-
-rotateLength = 10000000
-maxRotatedFiles = 10
+basedir = os.path.abspath(os.path.dirname(__file__))
 configfile = 'master.py'
 
 # Default umask for server
 umask = None
 
 # if this is a relocatable tac file, get the directory containing the TAC
-if basedir == '.':
-    basedir = os.path.abspath(os.path.dirname(__file__))
 
 # note: this line is matched against to check that this is a buildmaster
 # directory; do not edit it.
@@ -35,5 +32,3 @@ application.setComponent(
 
 m = BuildMaster(basedir, configfile, umask)
 m.setServiceParent(application)
-m.log_rotation.rotateLength = rotateLength
-m.log_rotation.maxRotatedFiles = maxRotatedFiles
