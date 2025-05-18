@@ -1,5 +1,5 @@
 from buildbot.schedulers import forcesched
-from buildbot.worker import local
+from buildbot.worker import Worker
 from buildbot.config import BuilderConfig
 from buildbot.steps.shell import ShellCommand
 from buildbot.process.factory import BuildFactory
@@ -10,7 +10,7 @@ c = BuildmasterConfig = {}
 ####### WORKERS
 
 c["workers"] = [
-    local.LocalWorker("worker"),
+    Worker("old-worker", password="s3cret"),
 ]
 
 c["protocols"] = {"pb": {"port": 9989}}
@@ -21,7 +21,7 @@ factory = BuildFactory()
 factory.addStep(ShellCommand(command=["echo", "ok"]))
 
 c["builders"] = [
-    BuilderConfig(name="builder", workernames=["worker"], factory=factory),
+    BuilderConfig(name="builder", workernames=["old-worker"], factory=factory),
 ]
 
 ####### SCHEDULERS
