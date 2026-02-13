@@ -4,12 +4,23 @@ from typing import Any
 from buildbot.config import BuilderConfig
 from buildbot.process.factory import BuildFactory
 from buildbot.schedulers import forcesched, triggerable
+from buildbot.schedulers.forcesched import (
+    AnyPropertyParameter,
+    BooleanParameter,
+    ChoiceStringParameter,
+    FileParameter,
+    FixedParameter,
+    IntParameter,
+    NestedParameter,
+    StringParameter,
+    TextParameter,
+    UserNameParameter,
+    WorkerChoiceParameter,
+)
 from buildbot.steps.shell import ShellCommand
 from buildbot.steps.trigger import Trigger
-from buildbot.steps.master import MasterShellCommand
-from buildbot.worker import local
+from buildbot.worker import Worker, local
 from buildbot.www.auth import UserPasswordAuth
-from buildbot.schedulers.forcesched import FixedParameter, StringParameter, TextParameter, IntParameter, BooleanParameter, UserNameParameter, ChoiceStringParameter, WorkerChoiceParameter, FileParameter, NestedParameter, AnyPropertyParameter
 
 c: dict[str, Any] = {}
 BuildmasterConfig = c
@@ -20,26 +31,36 @@ c["protocols"] = {"pb": {"port": 9989}}
 
 c["workers"] = [
     local.LocalWorker("worker"),
+    Worker("pb-worker", "password"),
+    Worker("msgpack-worker", "password"),
 ]
 
+c["protocols"] = {
+    "pb": {"port": 9989},
+    "msgpack_experimental_v7": {"port": 9990},
+}
+
 ####### BUILDERS
+
+factory = BuildFactory(
+    [
+        ShellCommand(command=["echo", "ok"]),
+    ]
+)
+
+
 c["builders"] = [
+    BuilderConfig(name="local-builder", workernames=["worker"], factory=factory),
+    BuilderConfig(name="pb-builder", workernames=["pb-worker"], factory=factory),
     BuilderConfig(
-        name="triggered",
-        workernames=["worker"],
-        factory=BuildFactory(
-            [
-                MasterShellCommand(
-                    command=["python3", "-c", "import sys; sys.exit(1)"]
-                ),
-                ShellCommand(command=["python3", "-c", "import sys; sys.exit(1)"]),
-            ]
-        ),
+        name="msgpack-builder", workernames=["msgpack-worker"], factory=factory
     ),
     BuilderConfig(
-        name="builder-with-a-really-long-name-and-some-more",
+        name="all-builder",
         workernames=["worker"],
-        factory=BuildFactory(([Trigger(["triggerable"], waitForFinish=True)])),
+        factory=BuildFactory(
+            steps=[Trigger(waitForFinish=True, schedulerNames=["triggerable"])]
+        ),
     ),
 ]
 
@@ -48,7 +69,7 @@ c["builders"] = [
 c["schedulers"] = [
     forcesched.ForceScheduler(
         name="force",
-        builderNames=[c["builders"][1].name],
+        builderNames=["all-builder"],
         properties=[
             FixedParameter(name="FixedParameter", default="FixedParameter"),
             StringParameter(name="StringParameter", default="StringParameter"),
@@ -58,23 +79,35 @@ c["schedulers"] = [
             UserNameParameter(name="UserNameParameter-no-mail", need_email=False),
             UserNameParameter(name="UserNameParameter-with-mail", need_email=True),
             *[
-                ChoiceStringParameter(name=f"ChoiceStringParameter-{strict=}-{multiple=}", strict=strict, multiple=multiple)
+                ChoiceStringParameter(
+                    name=f"ChoiceStringParameter-{strict=}-{multiple=}",
+                    strict=strict,
+                    multiple=multiple,
+                )
                 for strict, multiple in itertools.product((True, False), (True, False))
             ],
             WorkerChoiceParameter(name="WorkerChoiceParameter"),
             FileParameter(name="FileParameter"),
             *[
-                NestedParameter(name=f"NestedParameter-{layout}", layout=layout, fields=[
-                    IntParameter(name=f"NestedIntParameter-{layout}", default=1),
-                ])
+                NestedParameter(
+                    name=f"NestedParameter-{layout}",
+                    layout=layout,
+                    fields=[
+                        IntParameter(name=f"NestedIntParameter-{layout}", default=1),
+                    ],
+                )
                 for layout in ["vertical", "tabs", "simple"]
             ],
             AnyPropertyParameter(name="AnyPropertyParameter"),
-        ]
+        ],
     ),
     triggerable.Triggerable(
         "triggerable",
-        builderNames=["triggered"],
+        builderNames=[
+            "local-builder",
+            "pb-builder",
+            "msgpack-builder",
+        ],
     ),
 ]
 
@@ -105,7 +138,7 @@ c["www"] = {
         "grid_view": {},
         "waterfall_view": {},
         "wsgi_dashboards": [],
-    }
+    },
 }
 
 ####### DB URL
