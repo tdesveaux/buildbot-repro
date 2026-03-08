@@ -50,8 +50,6 @@ boto3
 moto
 Markdown>=3.0.0
 parameterized
-
-[test:platform_system != "Windows"]
 lz4
 
 [tls]

@@ -48,7 +48,7 @@ Requires-Dist: boto3; extra == "test"
 Requires-Dist: moto; extra == "test"
 Requires-Dist: Markdown>=3.0.0; extra == "test"
 Requires-Dist: parameterized; extra == "test"
-Requires-Dist: lz4; platform_system != "Windows" and extra == "test"
+Requires-Dist: lz4; extra == "test"
 Provides-Extra: bundle
 Requires-Dist: buildbot-www==99.9.9; extra == "bundle"
 Requires-Dist: buildbot-worker==99.9.9; extra == "bundle"
