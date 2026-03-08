@@ -1,0 +1,259 @@
+# This file is part of Buildbot.  Buildbot is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, version 2.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Copyright Buildbot Team Members
+
+from __future__ import annotations
+
+import enum
+from typing import TYPE_CHECKING
+from typing import Any
+
+from twisted.internet import defer
+from twisted.logger import Logger
+
+if TYPE_CHECKING:
+    from buildbot.process.build import Build
+    from buildbot.process.builder import Builder
+    from buildbot.util.twisted import InlineCallbacksType
+    from buildbot.worker.base import AbstractWorker
+    from buildbot.worker.latent import AbstractLatentWorker
+    from buildbot.worker.protocols.base import Connection
+
+
+class States(enum.Enum):
+    # The worker isn't attached, or is in the process of attaching.
+    DETACHED = 0
+    # The worker is available to build: either attached, or a latent worker.
+    AVAILABLE = 1
+    # The worker is building.
+    BUILDING = 2
+
+
+class AbstractWorkerForBuilder:
+    def __init__(self, builder: Builder):
+        self.ping_watchers: list[defer.Deferred] = []
+        self.state: States | None = None  # set in subclass
+        self.worker: AbstractWorker | None = None
+        self.builder = builder
+        self.builder_name = builder.name
+        self.locks = None
+
+        self._logger = Logger()
+        self._update_logger_ns()
+
+    def _update_logger_ns(self) -> None:
+        parts: list[str] = []
+        if self.worker is not None:
+            if self.worker.conn is not None:
+                parts.append(self.worker.conn.get_peer())
+            if self.worker.workername:
+                parts.append(self.worker.workername)
+
+        if self.builder.name:
+            parts.append(self.builder.name)
+        self._logger.namespace = f"WorkerForBuilder<{','.join(parts)}>"
+
+    def __repr__(self) -> str:
+        r = ["<", self.__class__.__name__]
+        if self.builder_name:
+            r.extend([" builder=", repr(self.builder_name)])
+        if self.worker:
+            r.extend([" worker=", repr(self.worker.workername)])
+        r.extend([" state=", self.state.name, ">"])  # type: ignore[union-attr]
+        return ''.join(r)
+
+    def getWorkerCommandVersion(self, command: str, oldversion: str | None = None) -> str | None:
+        if self.remoteCommands is None:
+            # the worker is 0.5.0 or earlier
+            return oldversion
+        return self.remoteCommands.get(command)
+
+    def isAvailable(self) -> bool:
+        # if this WorkerForBuilder is busy, then it's definitely not available
+        if self.isBusy():
+            return False
+
+        # otherwise, check in with the Worker
+        if self.worker:
+            return self.worker.canStartBuild()
+
+        # no worker? not very available.
+        return False
+
+    def isBusy(self) -> bool:
+        return self.state != States.AVAILABLE
+
+    def buildStarted(self) -> None:
+        self.state = States.BUILDING
+        self.worker.buildStarted(self)  # type: ignore[union-attr]
+
+    def buildFinished(self) -> None:
+        self.state = States.AVAILABLE
+        if self.worker:
+            self.worker.buildFinished(self)
+
+    @defer.inlineCallbacks
+    def attached(
+        self, worker: AbstractWorker, commands: dict[str, str] | None
+    ) -> InlineCallbacksType[None]:
+        """
+        @type  worker: L{buildbot.worker.Worker}
+        @param worker: the Worker that represents the worker as a whole
+        @type  commands: dict: string -> string, or None
+        @param commands: provides the worker's version of each RemoteCommand
+        """
+        self.remoteCommands = commands  # maps command name to version
+        if self.worker is None:
+            self.worker = worker
+            self.worker.addWorkerForBuilder(self)
+        else:
+            assert self.worker == worker
+        self._update_logger_ns()
+        self._logger.info(f"Worker {worker.workername} attached to {self.builder_name}")
+
+        yield self.worker.conn.remotePrint(message="attached")
+
+    def substantiate_if_needed(self, build: Build) -> defer.Deferred[bool]:
+        return defer.succeed(True)
+
+    def insubstantiate_if_needed(self) -> None:
+        pass
+
+    def ping(self) -> defer.Deferred[bool]:
+        """Ping the worker to make sure it is still there. Returns a Deferred
+        that fires with True if it is.
+        """
+        newping = not self.ping_watchers
+        d: defer.Deferred[bool] = defer.Deferred()
+        self.ping_watchers.append(d)
+        if newping:
+            Ping().ping(self.worker.conn).addBoth(self._pong)  # type: ignore[union-attr]
+
+        return d
+
+    def abortPingIfAny(self) -> None:
+        watchers = self.ping_watchers
+        self.ping_watchers = []
+        for d in watchers:
+            d.errback(PingException('aborted ping'))
+
+    def _pong(self, res: Any) -> None:
+        watchers = self.ping_watchers
+        self.ping_watchers = []
+        for d in watchers:
+            d.callback(res)
+
+    def detached(self) -> None:
+        self._logger.info(f"Worker {self.worker.workername} detached from {self.builder_name}")  # type: ignore[union-attr]
+        if self.worker:
+            self.worker.removeWorkerForBuilder(self)
+        self.worker = None
+        self.remoteCommands = None
+        self._update_logger_ns()
+
+
+class PingException(Exception):
+    pass
+
+
+class Ping:
+    running = False
+
+    def ping(self, conn: Connection | None) -> defer.Deferred[bool]:
+        assert not self.running
+        if not conn:
+            # clearly the ping must fail
+            return defer.fail(PingException("Worker not connected?"))
+        self.running = True
+        self._logger = Logger(f"Ping<{conn.get_peer()}>")
+        self._logger.info("sending ping")
+        self.d: defer.Deferred[bool] = defer.Deferred()
+        # TODO: add a distinct 'ping' command on the worker.. using 'print'
+        # for this purpose is kind of silly.
+        conn.remotePrint(message="ping").addCallbacks(
+            self._pong, self._ping_failed, errbackArgs=(conn,)
+        )
+        return self.d
+
+    def _pong(self, res: Any) -> None:
+        self._logger.info("ping finished: success")
+        self.d.callback(True)
+
+    def _ping_failed(self, res: Any, conn: Connection) -> None:
+        self._logger.info("ping finished: failure")
+        # the worker has some sort of internal error, disconnect them. If we
+        # don't, we'll requeue a build and ping them again right away,
+        # creating a nasty loop.
+        conn.loseConnection()
+        self.d.errback(res)
+
+
+class WorkerForBuilder(AbstractWorkerForBuilder):
+    def __init__(self, builder: Builder):
+        super().__init__(builder)
+        self.state = States.DETACHED
+
+    @defer.inlineCallbacks
+    def attached(
+        self, worker: AbstractWorker, commands: dict[str, str] | None
+    ) -> InlineCallbacksType[None]:
+        yield super().attached(worker, commands)
+
+        # Only set available on non-latent workers, since latent workers
+        # only attach while a build is in progress.
+        self.state = States.AVAILABLE
+
+    def detached(self) -> None:
+        super().detached()
+        if self.worker:
+            self.worker.removeWorkerForBuilder(self)
+        self.worker = None
+        self.state = States.DETACHED
+
+
+class LatentWorkerForBuilder(AbstractWorkerForBuilder):
+    def __init__(self, worker: AbstractLatentWorker, builder: Builder):
+        super().__init__(builder)
+        self.worker: AbstractLatentWorker | None = worker
+        self.state = States.AVAILABLE
+        self.worker.addWorkerForBuilder(self)
+        self._logger.info(f"Latent worker {worker.workername} attached to {self.builder_name}")
+
+    def substantiate_if_needed(self, build: Build) -> defer.Deferred[bool]:
+        self.state = States.DETACHED
+        d = self.substantiate(build)
+        return d
+
+    def insubstantiate_if_needed(self) -> None:
+        if self.worker:
+            self.worker.insubstantiate()
+
+    def attached(
+        self, worker: AbstractWorker, commands: dict[str, str] | None
+    ) -> defer.Deferred[None]:
+        # When a latent worker is attached, it is actually because it prepared for a build
+        # thus building and not available like for normal worker
+        if self.state == States.DETACHED:
+            self.state = States.BUILDING
+        return super().attached(worker, commands)
+
+    def substantiate(self, build: Build) -> defer.Deferred[bool]:
+        if self.worker:
+            return self.worker.substantiate(self, build)
+        return defer.succeed(False)
+
+    def ping(self) -> defer.Deferred[bool]:
+        if not self.worker.substantiated:  # type: ignore[union-attr]
+            return defer.fail(PingException("worker is not substantiated"))
+        return super().ping()
