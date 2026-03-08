@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: buildbot-pkg
 Version: 99.9.9
 Summary: Buildbot packaging tools
-Home-page: http://buildbot.net/
-Author: Pierre Tardy
-Author-email: tardyp@gmail.com
-License: GPL-2.0-or-later
+Author-email: Pierre Tardy <tardyp@gmail.com>
+License-Expression: GPL-2.0-or-later
+Project-URL: Homepage, http://buildbot.net/
+Requires-Dist: setuptools>=34.4.0
