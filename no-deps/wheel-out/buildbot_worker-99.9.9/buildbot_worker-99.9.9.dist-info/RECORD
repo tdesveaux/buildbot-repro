@@ -38,8 +38,8 @@ buildbot_worker/util/lineboundaries.py,sha256=A-XquFE_Pt6UlX3nytD9cpNv5tw9KizRx5
 buildbot_worker/util/process.py,sha256=AIPAkLa9tg4MvE5DZZ1C3CeEwJP5-ISJGBNmX1_8FmI,2280
 buildbot_worker/util/twisted.py,sha256=GRMl1RJ3GTTP5ZuV5LHaX1lTi_tBP5YADatX7jmk5FM,1080
 buildbot_worker-99.9.9.dist-info/licenses/COPYING,sha256=34QkYgTjxUzSSuu8I3FCNfX8QddU1TtlREoq-_BwEw8,15122
-buildbot_worker-99.9.9.dist-info/METADATA,sha256=xrAnZjZLYT-9MnzDAkkJAtbW58GnLJD3BLZhP9nKbS8,1078
-buildbot_worker-99.9.9.dist-info/WHEEL,sha256=lTU6B6eIfYoiQJTZNc-fyaR6BpL6ehTzU3xGYxn2n8k,91
+buildbot_worker-99.9.9.dist-info/METADATA,sha256=J5d13tNND05Vs_dRQVDROzjgzMSHNvx9zQpQ_ZM8oFY,1124
+buildbot_worker-99.9.9.dist-info/WHEEL,sha256=Lhh0i2-Askcb0AC94M7csJdk77ZCtyoFq69daK7gE84,91
 buildbot_worker-99.9.9.dist-info/entry_points.txt,sha256=ZOjAj2R0EET5dyEqhOPolSn5r0oE378JtweuRzBAzaY,163
 buildbot_worker-99.9.9.dist-info/top_level.txt,sha256=YV2c-kDX5EAqF2CAFo1kSHdc63-PU0xd7Zs1OwEydxQ,16
 buildbot_worker-99.9.9.dist-info/RECORD,,
