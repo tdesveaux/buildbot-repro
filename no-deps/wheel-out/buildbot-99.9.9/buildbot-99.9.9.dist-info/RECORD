@@ -489,8 +489,8 @@ buildbot/www/hooks/gitlab.py,sha256=paAAM3UNgPcXcY4PBLzv3Hv8kfPXgWGbO-7iS60Ijwo,
 buildbot/www/hooks/gitorious.py,sha256=q0GS7JleFYcpgLW3KzYrnEpa5nlkahWoQrwSS03bl0M,3329
 buildbot/www/hooks/poller.py,sha256=Mr6M9Shf2_08vSDnPzeaohLRwp83e7ma8tDkLd2HWic,2714
 buildbot-99.9.9.dist-info/licenses/COPYING,sha256=34QkYgTjxUzSSuu8I3FCNfX8QddU1TtlREoq-_BwEw8,15122
-buildbot-99.9.9.dist-info/METADATA,sha256=8ZJJ-LSQSp3-XxyW5Hhrl_VmKjRZZQB2opDpPA6tJfQ,4769
-buildbot-99.9.9.dist-info/WHEEL,sha256=lTU6B6eIfYoiQJTZNc-fyaR6BpL6ehTzU3xGYxn2n8k,91
+buildbot-99.9.9.dist-info/METADATA,sha256=Szl4l7vK9jCNNUZIQzP7vkSsAU5BWQOgzpdNaOVD1s0,4838
+buildbot-99.9.9.dist-info/WHEEL,sha256=Lhh0i2-Askcb0AC94M7csJdk77ZCtyoFq69daK7gE84,91
 buildbot-99.9.9.dist-info/entry_points.txt,sha256=xS6VC2gC1ZAr9JywFQ3JxIdOBfh48zILN_dUkF7mQQc,15561
 buildbot-99.9.9.dist-info/top_level.txt,sha256=W4i-yxriUe9WQfLjkzNqc9qHOR_DOU7PhpOEGD_t1T8,9
 buildbot-99.9.9.dist-info/RECORD,,
