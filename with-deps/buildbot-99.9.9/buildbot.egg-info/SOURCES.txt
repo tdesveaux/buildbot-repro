@@ -118,6 +118,7 @@ buildbot/db/compression/native.py
 buildbot/db/compression/protocol.py
 buildbot/db/compression/zstd.py
 buildbot/db/migrations/README
+buildbot/db/migrations/__init__.py
 buildbot/db/migrations/alembic.ini
 buildbot/db/migrations/env.py
 buildbot/db/migrations/versions/059_v3.4_alembic_initial.py
@@ -241,8 +242,10 @@ buildbot/secrets/providers/base.py
 buildbot/secrets/providers/file.py
 buildbot/secrets/providers/passwordstore.py
 buildbot/secrets/providers/vault_hvac.py
+buildbot/spec/__init__.py
 buildbot/spec/api.raml
 buildbot/spec/indent.py
+buildbot/spec/types/__init__.py
 buildbot/spec/types/build.raml
 buildbot/spec/types/build_data.raml
 buildbot/spec/types/builder.raml
@@ -421,6 +424,8 @@ buildbot/test/integration/interop/test_transfer.py
 buildbot/test/integration/interop/test_worker_reconnect.py
 buildbot/test/integration/pki/127.0.0.1.crt
 buildbot/test/integration/pki/127.0.0.1.key
+buildbot/test/integration/pki/__init__.py
+buildbot/test/integration/pki/ca/__init__.py
 buildbot/test/integration/pki/ca/ca.crt
 buildbot/test/integration/worker/test_comm.py
 buildbot/test/integration/worker/test_kubernetes.py
@@ -669,7 +674,9 @@ buildbot/test/unit/steps/test_transfer.py
 buildbot/test/unit/steps/test_trigger.py
 buildbot/test/unit/steps/test_vstudio.py
 buildbot/test/unit/steps/test_worker.py
+buildbot/test/unit/test_templates_dir/__init__.py
 buildbot/test/unit/test_templates_dir/builds.html
+buildbot/test/unit/test_templates_dir/plugin/__init__.py
 buildbot/test/unit/test_templates_dir/plugin/plugin.jade
 buildbot/test/unit/util/__init__.py
 buildbot/test/unit/util/test_ComparableMixin.py
