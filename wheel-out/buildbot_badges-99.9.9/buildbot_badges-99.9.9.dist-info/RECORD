@@ -1,0 +1,12 @@
+buildbot_badges/VERSION,sha256=-gvGDi0XaDGk18sppnwgf6d1fvJJHtsN2GBptM4sT44,6
+buildbot_badges/__init__.py,sha256=nH8CWJS92lVC82HyQSnUaK9lUOnAoKZ5rOLAueytacY,5036
+buildbot_badges/static/.placeholder,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+buildbot_badges/templates/badgeio.svg.j2,sha256=R71cKZHW_LRVYpITCkAzlrJC82waXYUIcJQyt2x1TyE,1212
+buildbot_badges/templates/flat-square.svg.j2,sha256=SWBfyS8SuDNme84T5pMQauuOaC2723HQ86KcrHCgwY8,714
+buildbot_badges/templates/flat.svg.j2,sha256=9mg3zxWjB44lsZWNRrvfaHwaJRTqX--iQbIg_1soXtc,1480
+buildbot_badges/templates/plastic.svg.j2,sha256=5fgVOkrHjXv-sxc2kFJhXOM2kcaQLARylbkNG5UXSzM,1574
+buildbot_badges-99.9.9.dist-info/METADATA,sha256=ourRjWNIWwVndVOZyI8DlfoCwsrlEiKN2Twx0vZ_kjI,412
+buildbot_badges-99.9.9.dist-info/WHEEL,sha256=lTU6B6eIfYoiQJTZNc-fyaR6BpL6ehTzU3xGYxn2n8k,91
+buildbot_badges-99.9.9.dist-info/entry_points.txt,sha256=S_o0BeZB0s31858rYwPWG9iZvBWuOAUN3H4QxWQat7c,43
+buildbot_badges-99.9.9.dist-info/top_level.txt,sha256=rLwuXHA4YTY4qHKNey-HN10_uFdEYRoWKTezdQhrGLw,16
+buildbot_badges-99.9.9.dist-info/RECORD,,
