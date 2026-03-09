@@ -1,0 +1,148 @@
+# This file is part of Buildbot.  Buildbot is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, version 2.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Copyright Buildbot Team Members
+
+from __future__ import annotations
+
+import os
+from binascii import hexlify
+from hashlib import sha1
+from typing import TYPE_CHECKING
+
+from twisted.internet import defer
+from twisted.python import log
+
+from buildbot.util import bytes2unicode
+from buildbot.util import unicode2bytes
+
+if TYPE_CHECKING:
+    from buildbot.db.users import UserModel
+    from buildbot.master import BuildMaster
+    from buildbot.util.twisted import InlineCallbacksType
+
+# TODO: fossil comes from a plugin. We should have an API that plugins could use to
+# register allowed user types.
+srcs = ['git', 'svn', 'hg', 'cvs', 'darcs', 'bzr', 'fossil']
+salt_len = 8
+
+
+def createUserObject(master: BuildMaster, author: str, src: str | None = None) -> defer.Deferred:
+    """
+    Take a Change author and source and translate them into a User Object,
+    storing the user in master.db, or returning None if the src is not
+    specified.
+
+    @param master: link to Buildmaster for database operations
+    @type master: master.Buildmaster instance
+
+    @param authors: Change author if string or Authz instance
+    @type authors: string or www.authz instance
+
+    @param src: source from which the User Object will be created
+    @type src: string
+    """
+
+    if not src:
+        log.msg("No vcs information found, unable to create User Object")
+        return defer.succeed(None)
+
+    if src in srcs:
+        usdict = {"identifier": author, "attr_type": src, "attr_data": author}
+    else:
+        log.msg(f"Unrecognized source argument: {src}")
+        return defer.succeed(None)
+
+    return master.db.users.findUserByAttr(
+        identifier=usdict['identifier'],
+        attr_type=usdict['attr_type'],
+        attr_data=usdict['attr_data'],
+    )
+
+
+def _extractContact(user: UserModel | None, contact_types: list[str], uid: int) -> str | None:
+    if user is not None and user.attributes is not None:
+        for type in contact_types:
+            contact = user.attributes.get(type)
+            if contact:
+                break
+    else:
+        contact = None
+    if contact is None:
+        log.msg(
+            format="Unable to find any of %(contact_types)r for uid: %(uid)r",
+            contact_types=contact_types,
+            uid=uid,
+        )
+    return contact
+
+
+@defer.inlineCallbacks
+def getUserContact(
+    master: BuildMaster, contact_types: list[str], uid: int
+) -> InlineCallbacksType[str | None]:
+    """
+    This is a simple getter function that returns a user attribute
+    that matches the contact_types argument, or returns None if no
+    uid/match is found.
+
+    @param master: BuildMaster used to query the database
+    @type master: BuildMaster instance
+
+    @param contact_types: list of contact attributes to look for in
+                         in a given user, such as 'email' or 'nick'
+    @type contact_types: list of strings
+
+    @param uid: user that is searched for the contact_types match
+    @type uid: integer
+
+    @returns: string of contact information or None via deferred
+    """
+    user = yield master.db.users.getUser(uid)
+    contact = _extractContact(user, contact_types, uid)
+    return contact
+
+
+def encrypt(passwd: str) -> str:
+    """
+    Encrypts the incoming password after adding some salt to store
+    it in the database.
+
+    @param passwd: password portion of user credentials
+    @type passwd: string
+
+    @returns: encrypted/salted string
+    """
+    m = sha1()
+    salt = hexlify(os.urandom(salt_len))
+    m.update(unicode2bytes(passwd) + salt)
+    crypted = bytes2unicode(salt) + m.hexdigest()
+    return crypted
+
+
+def check_passwd(guess: str, passwd: str) -> bool:
+    """
+    Tests to see if the guess, after salting and hashing, matches the
+    passwd from the database.
+
+    @param guess: incoming password trying to be used for authentication
+    @param passwd: already encrypted password from the database
+
+    @returns: boolean
+    """
+    m = sha1()
+    salt = passwd[: salt_len * 2]  # salt_len * 2 due to encode('hex_codec')
+    m.update(unicode2bytes(guess) + unicode2bytes(salt))
+    crypted_guess = bytes2unicode(salt) + m.hexdigest()
+
+    return crypted_guess == bytes2unicode(passwd)

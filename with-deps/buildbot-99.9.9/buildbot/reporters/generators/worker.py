@@ -1,0 +1,93 @@
+# This file is part of Buildbot.  Buildbot is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, version 2.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Copyright Buildbot Team Members
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import ClassVar
+
+from twisted.internet import defer
+from zope.interface import implementer
+
+from buildbot import config
+from buildbot import interfaces
+from buildbot import util
+from buildbot.reporters.message import MessageFormatterMissingWorker
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from buildbot.util.twisted import InlineCallbacksType
+
+ENCODING = 'utf-8'
+
+
+@implementer(interfaces.IReportGenerator)
+class WorkerMissingGenerator(util.ComparableMixin):
+    compare_attrs: ClassVar[Sequence[str]] = ['workers', 'formatter']
+
+    wanted_event_keys = [
+        ('workers', None, 'missing'),
+    ]
+
+    def __init__(self, workers: str | list[str] = 'all', message_formatter: Any = None) -> None:
+        self.workers = workers
+        self.formatter = message_formatter
+        if self.formatter is None:
+            self.formatter = MessageFormatterMissingWorker()
+
+    def check(self) -> None:
+        if not (self.workers == 'all' or isinstance(self.workers, (list, tuple, set))):
+            config.error("workers must be 'all', or list of worker names")
+
+    @defer.inlineCallbacks
+    def generate(
+        self, master: Any, reporter: Any, key: Any, worker: Any
+    ) -> InlineCallbacksType[Any]:
+        if not self._is_message_needed(worker):
+            return None
+
+        msg = yield self.formatter.formatMessageForMissingWorker(master, worker)
+        body = msg['body'].encode(ENCODING)
+        subject = msg['subject']
+        if subject is None:
+            subject = f"Buildbot worker {worker['name']} missing"
+        assert msg['type'] in (
+            'plain',
+            'html',
+        ), f"'{msg['type']}' message type must be 'plain' or 'html'."
+
+        return {
+            'body': body,
+            'subject': subject,
+            'type': msg['type'],
+            'results': None,
+            'builds': None,
+            "buildset": None,
+            'users': worker['notify'],
+            'patches': None,
+            'logs': None,
+            'worker': worker['name'],
+        }
+
+    def generate_name(self) -> str:
+        name = self.__class__.__name__
+        if self.workers is not None:
+            name += "_workers_" + "+".join(self.workers)
+        return name
+
+    def _is_message_needed(self, worker: Any) -> bool:
+        return (self.workers == 'all' or worker['name'] in self.workers) and worker['notify']
