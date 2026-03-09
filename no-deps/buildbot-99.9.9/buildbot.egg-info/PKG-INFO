@@ -2,12 +2,10 @@ Metadata-Version: 2.4
 Name: buildbot
 Version: 99.9.9
 Summary: The Continuous Integration Framework
-Home-page: http://buildbot.net/
-Author: Brian Warner
-Author-email: warner-buildbot@lothar.com
-Maintainer: Dustin J. Mitchell
-Maintainer-email: dustin@v.igoro.us
+Author-email: Brian Warner <warner-buildbot@lothar.com>
+Maintainer-email: "Dustin J. Mitchell" <dustin@v.igoro.us>
 License: GPL-2.0-or-later
+Project-URL: Homepage, http://buildbot.net/
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Environment :: No Input/Output (Daemon)
 Classifier: Environment :: Web Environment
@@ -21,6 +19,8 @@ Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
 Classifier: Programming Language :: Python :: 3.13
 Classifier: Programming Language :: Python :: 3.14
+Requires-Python: >=3.9
+Description-Content-Type: text/x-rst
 License-File: COPYING
 Dynamic: license-file
 

@@ -3,9 +3,10 @@ CREDITS
 MANIFEST.in
 README.rst
 UPGRADING
-setup.cfg
+pyproject.toml
 setup.py
 buildbot/__init__.py
+buildbot/_version.py
 buildbot/buildbot_net_usage_data.py
 buildbot/buildrequest.py
 buildbot/errors.py
