@@ -1,7 +1,7 @@
-setup.cfg
-setup.py
-buildbot_www/VERSION
+MANIFEST.in
+pyproject.toml
 buildbot_www/__init__.py
+buildbot_www/_version.py
 buildbot_www.egg-info/PKG-INFO
 buildbot_www.egg-info/SOURCES.txt
 buildbot_www.egg-info/dependency_links.txt

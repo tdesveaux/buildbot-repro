@@ -2,14 +2,7 @@ Metadata-Version: 2.4
 Name: buildbot-www
 Version: 99.9.9
 Summary: Buildbot UI
-Home-page: http://buildbot.net/
-Author: Povilas Kanapickas
-Author-email: povilas@radix.lt
+Author-email: Povilas Kanapickas <povilas@radix.lt>
 License: GPL-2.0-or-later
+Project-URL: Homepage, http://buildbot.net/
 Requires-Dist: buildbot
-Dynamic: author
-Dynamic: author-email
-Dynamic: home-page
-Dynamic: license
-Dynamic: requires-dist
-Dynamic: summary
