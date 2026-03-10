@@ -1,0 +1,28 @@
+Metadata-Version: 2.4
+Name: buildbot-worker
+Version: 99.9.9
+Summary: Buildbot Worker Daemon
+Home-page: http://buildbot.net/
+Author: Brian Warner
+Author-email: warner-buildbot@lothar.com
+Maintainer: Dustin J. Mitchell
+Maintainer-email: dustin@v.igoro.us
+License: GPL-2.0-or-later
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: No Input/Output (Daemon)
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: Topic :: Software Development :: Testing
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: 3.14
+License-File: COPYING
+Dynamic: license-file
+
+See the 'buildbot' package for details
