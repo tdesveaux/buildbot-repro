@@ -2,12 +2,6 @@ Metadata-Version: 2.4
 Name: buildbot-waterfall-view
 Version: 99.9.9
 Summary: Buildbot Waterfall View plugin
-Home-page: http://buildbot.net/
-Author: Pierre Tardy
-Author-email: tardyp@gmail.com
+Author-email: Pierre Tardy <tardyp@gmail.com>
 License: GPL-2.0-or-later
-Dynamic: author
-Dynamic: author-email
-Dynamic: home-page
-Dynamic: license
-Dynamic: summary
+Project-URL: Homepage, http://buildbot.net/

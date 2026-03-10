@@ -1,7 +1,7 @@
-setup.cfg
-setup.py
-buildbot_waterfall_view/VERSION
+MANIFEST.in
+pyproject.toml
 buildbot_waterfall_view/__init__.py
+buildbot_waterfall_view/_version.py
 buildbot_waterfall_view.egg-info/PKG-INFO
 buildbot_waterfall_view.egg-info/SOURCES.txt
 buildbot_waterfall_view.egg-info/dependency_links.txt
