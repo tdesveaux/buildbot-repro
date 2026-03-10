@@ -1,7 +1,7 @@
-setup.cfg
-setup.py
-buildbot_grid_view/VERSION
+MANIFEST.in
+pyproject.toml
 buildbot_grid_view/__init__.py
+buildbot_grid_view/_version.py
 buildbot_grid_view.egg-info/PKG-INFO
 buildbot_grid_view.egg-info/SOURCES.txt
 buildbot_grid_view.egg-info/dependency_links.txt

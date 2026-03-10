@@ -2,12 +2,6 @@ Metadata-Version: 2.4
 Name: buildbot-grid-view
 Version: 99.9.9
 Summary: Buildbot Grid View plugin
-Home-page: http://buildbot.net/
-Author: Robin Jarry
-Author-email: robin.jarry@6wind.com
+Author-email: Robin Jarry <robin.jarry@6wind.com>
 License: GPL-2.0-or-later
-Dynamic: author
-Dynamic: author-email
-Dynamic: home-page
-Dynamic: license
-Dynamic: summary
+Project-URL: Homepage, http://buildbot.net/
