@@ -22,38 +22,25 @@ Standard setup script.
 import os
 import sys
 
-from setuptools import Command
 from setuptools import setup
 from setuptools.command.sdist import sdist
+from setuptools_scm import get_version
 
-from buildbot_worker import version
+use_scm_version = {
+    "root": "..",
+    "relative_to": __file__,
+    "version_file": "buildbot_worker/_version.py",
+    "local_scheme": "no-local-version",
+}
+version = get_version(**use_scm_version)
+
 
 BUILDING_WHEEL = bool("bdist_wheel" in sys.argv)
-
-
-class our_install_data(Command):
-    def initialize_options(self):
-        self.install_dir = None
-
-    def finalize_options(self):
-        self.set_undefined_options(
-            'install',
-            ('install_lib', 'install_dir'),
-        )
-
-    def run(self):
-        # ensure there's a buildbot_worker/VERSION file
-        fn = os.path.join(self.install_dir, 'buildbot_worker', 'VERSION')
-        with open(fn, 'w') as f:
-            f.write(version)
 
 
 class our_sdist(sdist):
     def make_release_tree(self, base_dir, files):
         sdist.make_release_tree(self, base_dir, files)
-        # ensure there's a buildbot_worker/VERSION file
-        fn = os.path.join(base_dir, 'buildbot_worker', 'VERSION')
-        open(fn, 'w').write(version)
 
         # ensure that NEWS has a copy of the latest release notes, copied from
         # the master tree, with the proper version substituted
@@ -67,7 +54,6 @@ class our_sdist(sdist):
 
 
 setup_args = {
-    'version': version,
     'packages': [
         "buildbot_worker",
         "buildbot_worker.util",
@@ -96,7 +82,7 @@ setup_args = {
             'py.typed',
         ],
     },
-    'cmdclass': {'install_data': our_install_data, 'sdist': our_sdist},
+    'cmdclass': {'sdist': our_sdist},
     'entry_points': {
         'console_scripts': [
             'buildbot-worker=buildbot_worker.scripts.runner:run',
@@ -104,6 +90,7 @@ setup_args = {
             'buildbot_worker_windows_service=buildbot_worker.scripts.windows_service:HandleCommandLine',
         ]
     },
+    'use_scm_version': use_scm_version,
 }
 
 twisted_ver = ">= 21.2.0"

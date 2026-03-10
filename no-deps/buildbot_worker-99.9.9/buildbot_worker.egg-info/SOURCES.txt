@@ -2,9 +2,10 @@ COPYING
 MANIFEST.in
 README
 UPGRADING
-setup.cfg
+pyproject.toml
 setup.py
 buildbot_worker/__init__.py
+buildbot_worker/_version.py
 buildbot_worker/base.py
 buildbot_worker/bot.py
 buildbot_worker/compat.py

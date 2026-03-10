@@ -1,5 +1,5 @@
-buildbot_worker/VERSION,sha256=-gvGDi0XaDGk18sppnwgf6d1fvJJHtsN2GBptM4sT44,6
-buildbot_worker/__init__.py,sha256=jI0a49aAY1Imj2qsbNtlPa8L51hSBWlZ2-wXIXo3w9U,4885
+buildbot_worker/__init__.py,sha256=gNr-qUFGltqAmr2UI0VrmxoClkfB1fXRCLyDls_2Ga0,774
+buildbot_worker/_version.py,sha256=gF-u9fyzuQCWCZXr7kqcEbh4V_wLpxUP-Fx92kewgmw,706
 buildbot_worker/base.py,sha256=7452HVGhUF-2woeH6pUVASTJIzzQag7D8_zS7r9iRk4,13977
 buildbot_worker/bot.py,sha256=VNnN5blm0AsO-nImRedTWMd8c18O6Arh9ZnCzP5iQAE,826
 buildbot_worker/compat.py,sha256=XuLfvLTk_j-IqRym1pY_IRn4jlKwCBMV0hTf0ieqdWk,2417
@@ -38,7 +38,7 @@ buildbot_worker/util/lineboundaries.py,sha256=A-XquFE_Pt6UlX3nytD9cpNv5tw9KizRx5
 buildbot_worker/util/process.py,sha256=AIPAkLa9tg4MvE5DZZ1C3CeEwJP5-ISJGBNmX1_8FmI,2280
 buildbot_worker/util/twisted.py,sha256=GRMl1RJ3GTTP5ZuV5LHaX1lTi_tBP5YADatX7jmk5FM,1080
 buildbot_worker-99.9.9.dist-info/licenses/COPYING,sha256=34QkYgTjxUzSSuu8I3FCNfX8QddU1TtlREoq-_BwEw8,15122
-buildbot_worker-99.9.9.dist-info/METADATA,sha256=xrAnZjZLYT-9MnzDAkkJAtbW58GnLJD3BLZhP9nKbS8,1078
+buildbot_worker-99.9.9.dist-info/METADATA,sha256=WJ6k9Oxh4-MoBxElnS4gx8L-S0lSSQ-HEEnYFNazEK0,1113
 buildbot_worker-99.9.9.dist-info/WHEEL,sha256=aeYiig01lYGDzBgS8HxWXOg3uV61G9ijOsup-k9o1sk,91
 buildbot_worker-99.9.9.dist-info/entry_points.txt,sha256=ZOjAj2R0EET5dyEqhOPolSn5r0oE378JtweuRzBAzaY,163
 buildbot_worker-99.9.9.dist-info/top_level.txt,sha256=YV2c-kDX5EAqF2CAFo1kSHdc63-PU0xd7Zs1OwEydxQ,16
