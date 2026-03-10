@@ -2,17 +2,10 @@ Metadata-Version: 2.4
 Name: buildbot-badges
 Version: 99.9.9
 Summary: Buildbot badges
-Home-page: http://buildbot.net/
-Author: Buildbot Team Members
-Author-email: users@buildbot.net
+Author-email: Buildbot Team Members <users@buildbot.net>
 License: GPL-2.0-or-later
+Project-URL: Homepage, http://buildbot.net/
 Requires-Dist: klein
 Requires-Dist: CairoSVG
 Requires-Dist: cairocffi
 Requires-Dist: Jinja2
-Dynamic: author
-Dynamic: author-email
-Dynamic: home-page
-Dynamic: license
-Dynamic: requires-dist
-Dynamic: summary

@@ -1,7 +1,7 @@
-setup.cfg
-setup.py
-buildbot_badges/VERSION
+MANIFEST.in
+pyproject.toml
 buildbot_badges/__init__.py
+buildbot_badges/_version.py
 buildbot_badges.egg-info/PKG-INFO
 buildbot_badges.egg-info/SOURCES.txt
 buildbot_badges.egg-info/dependency_links.txt
