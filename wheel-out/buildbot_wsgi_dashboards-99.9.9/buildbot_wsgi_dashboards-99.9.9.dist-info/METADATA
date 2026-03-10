@@ -2,12 +2,6 @@ Metadata-Version: 2.4
 Name: buildbot-wsgi-dashboards
 Version: 99.9.9
 Summary: Buildbot plugin to integrate flask or bottle dashboards to buildbot UI (React)
-Home-page: http://buildbot.net/
-Author: Buildbot maintainers
-Author-email: devel@buildbot.net
+Author-email: Buildbot maintainers <devel@buildbot.net>
 License: GPL-2.0-or-later
-Dynamic: author
-Dynamic: author-email
-Dynamic: home-page
-Dynamic: license
-Dynamic: summary
+Project-URL: Homepage, http://buildbot.net/

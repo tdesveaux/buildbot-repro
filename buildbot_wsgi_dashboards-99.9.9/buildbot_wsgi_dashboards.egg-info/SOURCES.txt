@@ -1,7 +1,7 @@
-setup.cfg
-setup.py
-buildbot_wsgi_dashboards/VERSION
+MANIFEST.in
+pyproject.toml
 buildbot_wsgi_dashboards/__init__.py
+buildbot_wsgi_dashboards/_version.py
 buildbot_wsgi_dashboards.egg-info/PKG-INFO
 buildbot_wsgi_dashboards.egg-info/SOURCES.txt
 buildbot_wsgi_dashboards.egg-info/dependency_links.txt
