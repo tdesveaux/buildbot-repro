@@ -1,9 +1,9 @@
-buildbot_console_view/VERSION,sha256=-gvGDi0XaDGk18sppnwgf6d1fvJJHtsN2GBptM4sT44,6
-buildbot_console_view/__init__.py,sha256=T9Qqr6TxjUSsuBuMI-5oRRjzT6p31j6499sZv00GofE,867
+buildbot_console_view/__init__.py,sha256=x3WUe-nh6O0n9AoHyQLcpmrNvZINjMypNa_lkiftcrE,941
+buildbot_console_view/_version.py,sha256=gF-u9fyzuQCWCZXr7kqcEbh4V_wLpxUP-Fx92kewgmw,706
 buildbot_console_view/static/scripts.js,sha256=IV4dSkoCAwY8zlxumq5lf6w4UQpSyvZ1sFYaUoRPsxg,54314
 buildbot_console_view/static/styles.css,sha256=Nv_q0qvoRQN_M_5gEgbY09fau6giaT7odErAh3mF9Y8,507
-buildbot_console_view-99.9.9.dist-info/METADATA,sha256=OmQf3CmTjS_9IhoCOdqOjQMTDqu1aBfU2qyaoujWjVU,305
-buildbot_console_view-99.9.9.dist-info/WHEEL,sha256=lTU6B6eIfYoiQJTZNc-fyaR6BpL6ehTzU3xGYxn2n8k,91
+buildbot_console_view-99.9.9.dist-info/METADATA,sha256=LeAYt4dNcKtq8tjxaW-nYnTiCwjsuHB46bgKJAV3y_M,220
+buildbot_console_view-99.9.9.dist-info/WHEEL,sha256=aeYiig01lYGDzBgS8HxWXOg3uV61G9ijOsup-k9o1sk,91
 buildbot_console_view-99.9.9.dist-info/entry_points.txt,sha256=Jacs4CYzNTk-wM4jgo6EvveGrVXViccwc4x59DF7pFM,55
 buildbot_console_view-99.9.9.dist-info/top_level.txt,sha256=6HM-uYQXFBSqwKUDGlstijwb8vbgpVloBq3ZmATQFpE,22
 buildbot_console_view-99.9.9.dist-info/RECORD,,

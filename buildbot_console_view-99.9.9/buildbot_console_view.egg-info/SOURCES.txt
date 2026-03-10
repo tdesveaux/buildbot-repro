@@ -1,7 +1,7 @@
-setup.cfg
-setup.py
-buildbot_console_view/VERSION
+MANIFEST.in
+pyproject.toml
 buildbot_console_view/__init__.py
+buildbot_console_view/_version.py
 buildbot_console_view.egg-info/PKG-INFO
 buildbot_console_view.egg-info/SOURCES.txt
 buildbot_console_view.egg-info/dependency_links.txt
