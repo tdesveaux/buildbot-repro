@@ -1,0 +1,234 @@
+# This file is part of Buildbot.  Buildbot is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, version 2.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Copyright Buildbot Team Members
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from unittest import mock
+
+from twisted.internet import defer
+from twisted.trial import unittest
+
+from buildbot.changes import base
+from buildbot.config import ConfigErrors
+from buildbot.test.reactor import TestReactorMixin
+from buildbot.test.util import changesource
+
+if TYPE_CHECKING:
+    from buildbot.util.twisted import InlineCallbacksType
+
+
+class TestChangeSource(changesource.ChangeSourceMixin, TestReactorMixin, unittest.TestCase):
+    timeout = 120
+
+    class Subclass(base.ChangeSource):
+        pass
+
+    @defer.inlineCallbacks
+    def setUp(self) -> InlineCallbacksType[None]:  # type: ignore[override]
+        self.setup_test_reactor()
+        yield self.setUpChangeSource()
+
+    @defer.inlineCallbacks
+    def test_activation(self) -> InlineCallbacksType[None]:
+        cs = self.Subclass(name=self.DEFAULT_NAME)
+        cs.activate = mock.Mock(return_value=defer.succeed(None))  # type: ignore[method-assign]
+        cs.deactivate = mock.Mock(return_value=defer.succeed(None))  # type: ignore[method-assign]
+
+        # set the changesourceid, and claim the changesource on another master
+        yield self.attachChangeSource(cs)
+        yield self.setChangeSourceToMaster(self.OTHER_MASTER_ID)
+
+        yield cs.startService()
+        self.reactor.advance(cs.POLL_INTERVAL_SEC / 2)
+        self.reactor.advance(cs.POLL_INTERVAL_SEC / 5)
+        self.reactor.advance(cs.POLL_INTERVAL_SEC / 5)
+        self.assertFalse(cs.activate.called)
+        self.assertFalse(cs.deactivate.called)
+        self.assertFalse(cs.active)
+        self.assertEqual(cs.serviceid, self.DUMMY_CHANGESOURCE_ID)
+
+        # clear that masterid
+        yield cs.stopService()
+        yield self.setChangeSourceToMaster(None)
+
+        yield cs.startService()
+        self.reactor.advance(cs.POLL_INTERVAL_SEC)
+        self.assertTrue(cs.activate.called)
+        self.assertFalse(cs.deactivate.called)
+        self.assertTrue(cs.active)
+
+        # stop the service and see that deactivate is called
+        yield cs.stopService()
+        self.assertTrue(cs.activate.called)
+        self.assertTrue(cs.deactivate.called)
+        self.assertFalse(cs.active)
+
+
+class TestReconfigurablePollingChangeSource(
+    changesource.ChangeSourceMixin, TestReactorMixin, unittest.TestCase
+):
+    class Subclass(base.ReconfigurablePollingChangeSource):
+        pass
+
+    @defer.inlineCallbacks
+    def setUp(self) -> InlineCallbacksType[None]:  # type: ignore[override]
+        self.setup_test_reactor()
+
+        yield self.setUpChangeSource()
+
+        yield self.attachChangeSource(self.Subclass(name=self.DEFAULT_NAME))
+
+    @defer.inlineCallbacks
+    def runClockFor(self, secs: int) -> InlineCallbacksType[None]:
+        yield self.reactor.pump([0] + [1.0] * secs)  # type: ignore[func-returns-value]
+
+    @defer.inlineCallbacks
+    def test_config_negative_interval(self) -> InlineCallbacksType[None]:
+        try:
+            yield self.changesource.reconfigServiceWithSibling(  # type: ignore[attr-defined]
+                self.Subclass(name="NegativePollInterval", pollInterval=-1, pollAtLaunch=False)
+            )
+        except ConfigErrors as e:
+            self.assertEqual("interval must be >= 0: -1", e.errors[0])
+
+    @defer.inlineCallbacks
+    def test_config_negative_random_delay_min(self) -> InlineCallbacksType[None]:
+        try:
+            yield self.changesource.reconfigServiceWithSibling(  # type: ignore[attr-defined]
+                self.Subclass(
+                    name="NegativePollRandomDelayMin",
+                    pollInterval=1,
+                    pollAtLaunch=False,
+                    pollRandomDelayMin=-1,
+                    pollRandomDelayMax=1,
+                )
+            )
+        except ConfigErrors as e:
+            self.assertEqual("min random delay must be >= 0: -1", e.errors[0])
+
+    @defer.inlineCallbacks
+    def test_config_negative_random_delay_max(self) -> InlineCallbacksType[None]:
+        try:
+            yield self.changesource.reconfigServiceWithSibling(  # type: ignore[attr-defined]
+                self.Subclass(
+                    name="NegativePollRandomDelayMax",
+                    pollInterval=1,
+                    pollAtLaunch=False,
+                    pollRandomDelayMin=1,
+                    pollRandomDelayMax=-1,
+                )
+            )
+        except ConfigErrors as e:
+            self.assertEqual("max random delay must be >= 0: -1", e.errors[0])
+
+    @defer.inlineCallbacks
+    def test_config_random_delay_min_gt_random_delay_max(self) -> InlineCallbacksType[None]:
+        try:
+            yield self.changesource.reconfigServiceWithSibling(  # type: ignore[attr-defined]
+                self.Subclass(
+                    name="PollRandomDelayMinGtPollRandomDelayMax",
+                    pollInterval=1,
+                    pollAtLaunch=False,
+                    pollRandomDelayMin=2,
+                    pollRandomDelayMax=1,
+                )
+            )
+        except ConfigErrors as e:
+            self.assertEqual("min random delay must be <= 1: 2", e.errors[0])
+
+    @defer.inlineCallbacks
+    def test_config_random_delay_max_gte_interval(self) -> InlineCallbacksType[None]:
+        try:
+            yield self.changesource.reconfigServiceWithSibling(  # type: ignore[attr-defined]
+                self.Subclass(
+                    name="PollRandomDelayMaxGtePollInterval",
+                    pollInterval=1,
+                    pollAtLaunch=False,
+                    pollRandomDelayMax=1,
+                )
+            )
+        except ConfigErrors as e:
+            self.assertEqual("max random delay must be < 1: 1", e.errors[0])
+
+    @defer.inlineCallbacks
+    def test_loop_loops(self) -> InlineCallbacksType[None]:
+        # track when poll() gets called
+        loops = []
+        self.changesource.poll = lambda: loops.append(self.reactor.seconds())  # type: ignore[attr-defined]
+
+        yield self.startChangeSource()
+        yield self.changesource.reconfigServiceWithSibling(  # type: ignore[attr-defined]
+            self.Subclass(name=self.DEFAULT_NAME, pollInterval=5, pollAtLaunch=False)
+        )
+
+        yield self.runClockFor(12)
+        # note that it does *not* poll at time 0
+        self.assertEqual(loops, [5.0, 10.0])
+
+    @defer.inlineCallbacks
+    def test_loop_exception(self) -> InlineCallbacksType[None]:
+        # track when poll() gets called
+        loops = []
+
+        def poll() -> None:
+            loops.append(self.reactor.seconds())
+            raise RuntimeError("oh noes")
+
+        self.changesource.poll = poll  # type: ignore[attr-defined]
+
+        yield self.startChangeSource()
+        yield self.changesource.reconfigServiceWithSibling(  # type: ignore[attr-defined]
+            self.Subclass(name=self.DEFAULT_NAME, pollInterval=5, pollAtLaunch=False)
+        )
+
+        yield self.runClockFor(12)
+        # note that it keeps looping after error
+        self.assertEqual(loops, [5.0, 10.0])
+        self.assertEqual(len(self.flushLoggedErrors(RuntimeError)), 2)
+
+    @defer.inlineCallbacks
+    def test_poll_only_if_activated(self) -> InlineCallbacksType[None]:
+        """The polling logic only applies if the source actually starts!"""
+
+        yield self.setChangeSourceToMaster(self.OTHER_MASTER_ID)
+
+        loops = []
+        self.changesource.poll = lambda: loops.append(self.reactor.seconds())  # type: ignore[attr-defined]
+
+        yield self.startChangeSource()
+        yield self.changesource.reconfigServiceWithSibling(  # type: ignore[attr-defined]
+            self.Subclass(name=self.DEFAULT_NAME, pollInterval=5, pollAtLaunch=False)
+        )
+
+        yield self.runClockFor(12)
+
+        # it doesn't do anything because it was already claimed
+        self.assertEqual(loops, [])
+
+    @defer.inlineCallbacks
+    def test_pollAtLaunch(self) -> InlineCallbacksType[None]:
+        # track when poll() gets called
+        loops = []
+        self.changesource.poll = lambda: loops.append(self.reactor.seconds())  # type: ignore[attr-defined]
+        yield self.startChangeSource()
+        yield self.changesource.reconfigServiceWithSibling(  # type: ignore[attr-defined]
+            self.Subclass(name=self.DEFAULT_NAME, pollInterval=5, pollAtLaunch=True)
+        )
+
+        yield self.runClockFor(12)
+
+        # note that it *does* poll at time 0
+        self.assertEqual(loops, [0.0, 5.0, 10.0])

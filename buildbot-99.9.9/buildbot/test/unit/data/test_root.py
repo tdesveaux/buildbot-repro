@@ -1,0 +1,110 @@
+# This file is part of Buildbot.  Buildbot is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, version 2.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Copyright Buildbot Team Members
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from twisted.internet import defer
+from twisted.trial import unittest
+
+from buildbot.data import connector
+from buildbot.data import root
+from buildbot.test.util import endpoint
+from buildbot.test.util.warnings import assertProducesWarnings
+from buildbot.warnings import DeprecatedApiWarning
+
+if TYPE_CHECKING:
+    from buildbot.util.twisted import InlineCallbacksType
+
+
+class RootEndpoint(endpoint.EndpointMixin, unittest.TestCase):
+    endpointClass = root.RootEndpoint
+    resourceTypeClass = root.Root
+
+    @defer.inlineCallbacks
+    def setUp(self) -> InlineCallbacksType[None]:  # type: ignore[override]
+        yield self.setUpEndpoint()
+        self.master.data.rootLinks = [
+            {'name': 'abc'},
+        ]
+
+    @defer.inlineCallbacks
+    def test_get(self) -> InlineCallbacksType[None]:
+        with assertProducesWarnings(
+            DeprecatedApiWarning, message_pattern='.*the root endpoint with endpoint directory.*'
+        ):
+            rootlinks = yield self.callGet(('',))
+
+        for rootlink in rootlinks:
+            self.validateData(rootlink)
+
+        self.assertEqual(
+            rootlinks,
+            [
+                {'name': 'abc'},
+            ],
+        )
+
+
+class SpecEndpoint(endpoint.EndpointMixin, unittest.TestCase):
+    endpointClass = root.SpecEndpoint
+    resourceTypeClass = root.Spec
+
+    @defer.inlineCallbacks
+    def setUp(self) -> InlineCallbacksType[None]:  # type: ignore[override]
+        yield self.setUpEndpoint()
+        # replace fakeConnector with real DataConnector
+        self.master.data.disownServiceParent()
+        self.master.data = connector.DataConnector()
+        yield self.master.data.setServiceParent(self.master)
+
+    @defer.inlineCallbacks
+    def test_get(self) -> InlineCallbacksType[None]:
+        specs = yield self.callGet(('application.spec',))
+
+        for s in specs:
+            self.validateData(s)
+
+        for s in specs:
+            # only test an endpoint that is reasonably stable
+            if s['path'] != "master":
+                continue
+            self.assertEqual(
+                s,
+                {
+                    'path': 'master',
+                    'type': 'master',
+                    'type_spec': {
+                        'fields': [
+                            {'name': 'active', 'type': 'boolean', 'type_spec': {'name': 'boolean'}},
+                            {
+                                'name': 'masterid',
+                                'type': 'integer',
+                                'type_spec': {'name': 'integer'},
+                            },
+                            {'name': 'link', 'type': 'link', 'type_spec': {'name': 'link'}},
+                            {'name': 'name', 'type': 'string', 'type_spec': {'name': 'string'}},
+                            {
+                                'name': 'last_active',
+                                'type': 'datetime',
+                                'type_spec': {'name': 'datetime'},
+                            },
+                        ],
+                        'type': 'master',
+                    },
+                    'plural': 'masters',
+                },
+            )
