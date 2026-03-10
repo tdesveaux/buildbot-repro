@@ -1,1 +1,3 @@
 buildbot_worker
+contrib
+docs

@@ -20,9 +20,7 @@ Standard setup script.
 """
 
 import os
-import sys
 
-from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.sdist import sdist
 from setuptools_scm import get_version
@@ -34,9 +32,6 @@ use_scm_version = {
     "local_scheme": "no-local-version",
 }
 version = get_version(**use_scm_version)
-
-
-BUILDING_WHEEL = bool("bdist_wheel" in sys.argv)
 
 
 class our_sdist(sdist):
@@ -54,47 +49,13 @@ class our_sdist(sdist):
             f.write(src)
 
 
-packages = find_packages(
-    exclude=[
-        # skip tests for wheels (save 40% of the archive)
-        "buildbot_worker.test",
-        "buildbot_worker.test.fake",
-        "buildbot_worker.test.unit",
-        "buildbot_worker.test.util",
-    ]
-    if BUILDING_WHEEL
-    else [],
-)
-packages.sort()
-
 setup_args = {
-    'packages': packages,
-    # mention data_files, even if empty, so install_data is called and
-    # VERSION gets copied
-    'data_files': [("buildbot_worker", [])],
-    'package_data': {
-        '': [
-            'VERSION',
-        ],
-        'buildbot_worker': [
-            'py.typed',
-        ],
-    },
     'cmdclass': {'sdist': our_sdist},
-    'entry_points': {
-        'console_scripts': [
-            'buildbot-worker=buildbot_worker.scripts.runner:run',
-            # this will also be shipped on non windows :-(
-            'buildbot_worker_windows_service=buildbot_worker.scripts.windows_service:HandleCommandLine',
-        ]
-    },
     'use_scm_version': use_scm_version,
 }
 
-twisted_ver = ">= 21.2.0"
-
 setup_args['install_requires'] = [
-    'twisted ' + twisted_ver,
+    'twisted >= 21.2.0',
     'autobahn >= 0.16.0',
     'msgpack >= 0.6.0',
     # buildbot_worker_windows_service needs pywin32
